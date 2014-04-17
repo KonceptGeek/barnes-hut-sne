@@ -163,6 +163,7 @@ def main(args):
     #write the results
     #write_results(resData, 'finalResult.dat')
 
+    #convert result into json and write it
     jsonStr = json.dumps(resData)
     with open('finalResult.json','w') as outFile:
         outFile.write(jsonStr+'\n')
