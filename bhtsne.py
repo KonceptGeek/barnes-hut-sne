@@ -44,6 +44,7 @@ from struct import calcsize, pack, unpack
 from subprocess import Popen
 from sys import stderr, stdin, stdout
 from tempfile import mkdtemp
+import gzip, string, numpy, sys, json
 
 ### Constants
 BH_TSNE_BIN_PATH = path_join(dirname(__file__), 'bh_tsne')
@@ -54,6 +55,7 @@ assert isfile(BH_TSNE_BIN_PATH), ('Unable to find the bh_tsne binary in the '
 DEFAULT_PERPLEXITY = 30.0
 DEFAULT_THETA = 0.5
 ###
+
 
 def _argparse():
     argparse = ArgumentParser('bh_tsne Python wrapper')
@@ -131,29 +133,42 @@ def bh_tsne(samples, perplexity=DEFAULT_PERPLEXITY, theta=DEFAULT_THETA,
             # The last piece of data is the cost for each sample, we ignore it
             #read_unpack('{}d'.format(sample_count), output_file)
 
+def write_results(data,filepath):
+    with open(filepath, 'w') as outFile:
+        for (title,result) in data:
+            outFile.write("%s\t%s,%s\n" % (title, result[0], result[1]))
+
 def main(args):
     argp = _argparse().parse_args(args[1:])
 
     # Read the data, with some sanity checking
     data = []
-    for sample_line_num, sample_line in enumerate((l.rstrip('\n')
-            for l in argp.input), start=1):
-        sample_data = sample_line.split('\t')
-        try:
-            assert len(sample_data) == dims, ('Input line #{} of '
-                    'dimensionality {} although we have previously observed '
-                    'lines with dimensionality {}, possible data error or is '
-                    'the data sparsely encoded?'
-                    ).format(sample_line_num, len(sample_data), dims)
-        except NameError:
-            # First line, record the dimensionality
-            dims = len(sample_data)
-        data.append([float(e) for e in sample_data])
+    titles = []
+    gzipFile = gzip.open("data/english-embeddings.turian.txt.gz")
 
-    for result in bh_tsne(data, perplexity=argp.perplexity, theta=argp.theta,
-            verbose=argp.verbose):
-        argp.output.write('{}\t{}\n'.format(*result))
+    for line in gzipFile:
+        tokens = string.split(line)
+        titles.append(tokens[0])
+        data.append([float(f) for f in tokens[1:]])
+    data = numpy.array(data)
+    
+    #call bh_tsne and get the results. Zip the titles and results for writing
+    result = bh_tsne(data, perplexity=argp.perplexity, theta=argp.theta, 
+        verbose=argp.verbose)
+    #resData = zip(titles,[[res[0],res[1]] for res in result])
+    resData = {}
+    for (title,result) in zip(titles,[[res[0],res[1]] for res in result]):
+        resData[title] = {'x':result[0], 'y':result[1]}
+    
+    #write the results
+    #write_results(resData, 'finalResult.dat')
+
+    jsonStr = json.dumps(resData)
+    with open('finalResult.json','w') as outFile:
+        outFile.write(jsonStr+'\n')
 
 if __name__ == '__main__':
     from sys import argv
     exit(main(argv))
+
+
