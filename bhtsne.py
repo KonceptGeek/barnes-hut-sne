@@ -68,6 +68,8 @@ def _argparse():
     argparse.add_argument('-i', '--input', type=FileType('r'), default=stdin)
     argparse.add_argument('-o', '--output', type=FileType('w'),
             default=stdout)
+    argparse.add_argument('-r', '--render', action='store_true')
+    argparse.add_argument('-w', '--write', action='store_true')
     return argparse
 
 
@@ -139,9 +141,12 @@ def write_results(data,filepath):
             outFile.write("%s\t%s,%s\n" % (title, result[0], result[1]))
 
 def main(args):
+    RENDER = False
+    WRITE_JSON = True
+
     argp = _argparse().parse_args(args[1:])
 
-    # Read the data, with some sanity checking
+    # Read the data
     data = []
     titles = []
     gzipFile = gzip.open("data/english-embeddings.turian.txt.gz")
@@ -155,18 +160,24 @@ def main(args):
     #call bh_tsne and get the results. Zip the titles and results for writing
     result = bh_tsne(data, perplexity=argp.perplexity, theta=argp.theta, 
         verbose=argp.verbose)
-    #resData = zip(titles,[[res[0],res[1]] for res in result])
-    resData = {}
-    for (title,result) in zip(titles,[[res[0],res[1]] for res in result]):
-        resData[title] = {'x':result[0], 'y':result[1]}
     
-    #write the results
-    #write_results(resData, 'finalResult.dat')
+    #render image
+    if argp.render:
+        print "Rendering Image"
+        import render
+        render.render([(title, point[0], point[1]) for title, point in zip(titles, result)], "output/duplicated-data.rendered.png", width=3000, height=1800) 
+    
 
     #convert result into json and write it
-    jsonStr = json.dumps(resData)
-    with open('finalResult.json','w') as outFile:
-        outFile.write(jsonStr+'\n')
+    if argp.write:
+        print "Writing data to file"
+        resData = {}
+        for (title,result) in zip(titles,[[res[0],res[1]] for res in result]):
+            resData[title] = {'x':result[0], 'y':result[1]}
+
+        jsonStr = json.dumps(resData)
+        with open('output/finalResult.json','w') as outFile:
+            outFile.write(jsonStr+'\n')
 
 if __name__ == '__main__':
     from sys import argv
