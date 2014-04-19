@@ -135,15 +135,7 @@ def bh_tsne(samples, perplexity=DEFAULT_PERPLEXITY, theta=DEFAULT_THETA,
             # The last piece of data is the cost for each sample, we ignore it
             #read_unpack('{}d'.format(sample_count), output_file)
 
-def write_results(data,filepath):
-    with open(filepath, 'w') as outFile:
-        for (title,result) in data:
-            outFile.write("%s\t%s,%s\n" % (title, result[0], result[1]))
-
 def main(args):
-    RENDER = False
-    WRITE_JSON = True
-
     argp = _argparse().parse_args(args[1:])
 
     # Read the data
@@ -172,11 +164,20 @@ def main(args):
     if argp.write:
         print "Writing data to file"
         resData = {}
+        minx = 0
+        maxx = 0
+        miny = 0
+        maxy = 0
         for (title,result) in zip(titles,[[res[0],res[1]] for res in result]):
             resData[title] = {'x':result[0], 'y':result[1]}
-
+            if minx > result[0]: minx = result[0]
+            if maxx < result[0]: maxx = result[0]
+            if miny > result[1]: miny = result[1]
+            if maxy < result[1]: maxy = result[1]
+        
         jsonStr = json.dumps(resData)
-        with open('output/finalResult.json','w') as outFile:
+        print "MinX - %s MaxX - %s MinY - %s MaxY - %s" % (minx, maxx, miny, maxy)
+        with open('output/coordinates.json','w') as outFile:
             outFile.write(jsonStr+'\n')
 
 if __name__ == '__main__':
