@@ -10,13 +10,21 @@
 
 </style>
 <body>
+<h1>Canvas Semantic Zooming</h1>
 <script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="file:///Users/KonceptGeek/Dropbox/Public/finalResult.json"></script>
+<script src="file:///cs/natlang-user/jasneet/tSNE/barnes-hut-sne/output/coordinates.json"></script>
 <script type="text/javascript">
 var width = 1000,
-    height = 600;
+    height = 1000;
 
 var activity=jsonstr;
+
+var data = []; // This will be the resulting array
+var titles = [];
+for(var key in activity) {
+  data.push([activity[key].x,activity[key].y]);
+  titles.push(key);
+}
 
 var x = d3.scale.linear()
     .domain([-22, 22])
@@ -29,7 +37,7 @@ var y = d3.scale.linear()
 var canvas = d3.select("body").append("canvas")
     .attr("width", width)
     .attr("height", height)
-    .call(d3.behavior.zoom().x(x).y(y).scaleExtent([1, 8]).on("zoom", zoom))
+    .call(d3.behavior.zoom().x(x).y(y).scaleExtent([1, 1000]).on("zoom", zoom))
   .node().getContext("2d");
 
 draw();
@@ -40,15 +48,15 @@ function zoom() {
 }
 
 function draw() {
-  var i = -1, d, cx, cy;
+  var i = -1, n = data.length, d, cx, cy;
   canvas.beginPath();
-  for (var key in activity) {
-  	d = key;
-  	cx = activity[key].x;
-  	cy = activity[key].y;
-  	canvas.moveTo(cx,cy);
-  	canvas.arc(cx, cy, 2.5, 0, 2 * Math.PI);
+  while (++i < n) {
+    d = data[i];
+    title = titles[i]
+    cx = x(d[0]);
+    cy = y(d[1]);
+    canvas.moveTo(cx, cy);
+    canvas.fillText(title,cx,cy);
   }
   canvas.fill();
-}
-</script>
+}</script>
