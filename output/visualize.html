@@ -11,10 +11,44 @@
 </style>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
-<script>
+<script src="file:///Users/KonceptGeek/Dropbox/Public/finalResult.json"></script>
+<script type="text/javascript">
+var width = 1000,
+    height = 600;
 
-var data = d3.json("https://dl.dropboxusercontent.com/u/8263171/finalResult.json", function(data) {
-	console.log(data)
-});
+var activity=jsonstr;
 
+var x = d3.scale.linear()
+    .domain([-22, 22])
+    .range([-22, 22]);
+
+var y = d3.scale.linear()
+    .domain([-22, 22])
+    .range([-22, 22]);
+
+var canvas = d3.select("body").append("canvas")
+    .attr("width", width)
+    .attr("height", height)
+    .call(d3.behavior.zoom().x(x).y(y).scaleExtent([1, 8]).on("zoom", zoom))
+  .node().getContext("2d");
+
+draw();
+
+function zoom() {
+  canvas.clearRect(0, 0, width, height);
+  draw();
+}
+
+function draw() {
+  var i = -1, d, cx, cy;
+  canvas.beginPath();
+  for (var key in activity) {
+  	d = key;
+  	cx = activity[key].x;
+  	cy = activity[key].y;
+  	canvas.moveTo(cx,cy);
+  	canvas.arc(cx, cy, 2.5, 0, 2 * Math.PI);
+  }
+  canvas.fill();
+}
 </script>

@@ -178,6 +178,7 @@ def main(args):
         jsonStr = json.dumps(resData)
         print "MinX - %s MaxX - %s MinY - %s MaxY - %s" % (minx, maxx, miny, maxy)
         with open('output/coordinates.json','w') as outFile:
+            outFile.write("jsonstr = ");
             outFile.write(jsonStr+'\n')
 
 if __name__ == '__main__':
