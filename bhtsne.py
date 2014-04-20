@@ -45,6 +45,8 @@ from subprocess import Popen
 from sys import stderr, stdin, stdout
 from tempfile import mkdtemp
 import gzip, string, numpy, sys, json
+import featureExtraction
+from scipy import sparse
 
 ### Constants
 BH_TSNE_BIN_PATH = path_join(dirname(__file__), 'bh_tsne')
@@ -75,7 +77,7 @@ def _argparse():
 
 class TmpDir:
     def __enter__(self):
-        self._tmp_dir_path = mkdtemp()
+        self._tmp_dir_path = mkdtemp(dir='Temp/')
         return self._tmp_dir_path
 
     def __exit__(self, type, value, traceback):
@@ -89,9 +91,9 @@ def bh_tsne(samples, perplexity=DEFAULT_PERPLEXITY, theta=DEFAULT_THETA,
         verbose=False):
     # Assume that the dimensionality of the first sample is representative for
     #   the whole batch
-    sample_dim = len(samples[0])
-    sample_count = len(samples)
-
+    sample_dim = int(samples.get_shape()[1])
+    sample_count = int(samples.get_shape()[0])
+    
     # bh_tsne works with fixed input and output paths, give it a temporary
     #   directory to work in so we don't clutter the filesystem
     with TmpDir() as tmp_dir_path:
@@ -103,7 +105,11 @@ def bh_tsne(samples, perplexity=DEFAULT_PERPLEXITY, theta=DEFAULT_THETA,
                 perplexity))
             # Then write the data
             for sample in samples:
-                data_file.write(pack('{}d'.format(len(sample)), *sample))
+                sample = sample.toarray()[0]
+                denseSample = []
+                for val in sample:
+                    denseSample.append(val)
+                data_file.write(pack('{}d'.format(len(denseSample)), *denseSample))
 
         # Call bh_tsne and let it do its thing
         with open('/dev/null', 'w') as dev_null:
@@ -141,13 +147,22 @@ def main(args):
     # Read the data
     data = []
     titles = []
-    gzipFile = gzip.open("data/english-embeddings.turian.txt.gz")
+    #gzipFile = gzip.open("data/english-embeddings.turian.txt.gz")
 
-    for line in gzipFile:
-        tokens = string.split(line)
-        titles.append(tokens[0])
-        data.append([float(f) for f in tokens[1:]])
-    data = numpy.array(data)
+    #for line in gzipFile:
+    #    tokens = string.split(line)
+    #    titles.append(tokens[0])
+    #    data.append([float(f) for f in tokens[1:]])
+    #data = numpy.array(data)
+    print "Reading Data"    
+    lensingJson = featureExtraction.readData('data/fullData.json')
+     
+    #ExtractBagOfWord features
+    print "Extracting Features"
+    data = featureExtraction.extBagOfWordFeatures(lensingJson)
+    
+    for i in range(0,len(lensingJson)):
+        titles.append(str(i))
     
     #call bh_tsne and get the results. Zip the titles and results for writing
     result = bh_tsne(data, perplexity=argp.perplexity, theta=argp.theta, 
@@ -157,7 +172,7 @@ def main(args):
     if argp.render:
         print "Rendering Image"
         import render
-        render.render([(title, point[0], point[1]) for title, point in zip(titles, result)], "output/duplicated-data.rendered.png", width=3000, height=1800) 
+        render.render([(title, point[0], point[1]) for title, point in zip(titles, result)], "output/lensing500p30-data.rendered.png", width=3000, height=1800) 
     
 
     #convert result into json and write it
@@ -175,9 +190,11 @@ def main(args):
             if miny > result[1]: miny = result[1]
             if maxy < result[1]: maxy = result[1]
         
+        print "creating json" 
+        print len(resData)
         jsonStr = json.dumps(resData)
         print "MinX - %s MaxX - %s MinY - %s MaxY - %s" % (minx, maxx, miny, maxy)
-        with open('output/coordinates.json','w') as outFile:
+        with open('output/coordinateslensing.json','w') as outFile:
             outFile.write("jsonstr = ");
             outFile.write(jsonStr+'\n')
 
