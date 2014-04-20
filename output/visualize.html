@@ -2,10 +2,24 @@
 <meta charset="utf-8">
 <title>Zoom + Pan</title>
 <style>
+svg {
+  font: 10px sans-serif;
+}
 
 .overlay {
   fill: none;
   pointer-events: all;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+text:hover {
+	fill: red;
 }
 
 </style>
@@ -13,18 +27,16 @@
 <center>
 <h1>tSNE Visualization</h1>
 <script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="file:///cs/natlang-user/jasneet/tSNE/barnes-hut-sne/output/coordinates.json"></script>
+<script src="file:///Users/KonceptGeek/Documents/Projects/barnes-hut-sne/output/coordinates.json"></script>
 <script type="text/javascript">
 var width = 1000,
-    height = 1000;
+    height = 600;
 
 var activity=jsonstr;
 
 var data = []; // This will be the resulting array
-var titles = [];
 for(var key in activity) {
-  data.push([activity[key].x,activity[key].y]);
-  titles.push(key);
+  data.push([activity[key].x,activity[key].y,key]);
 }
 
 var x = d3.scale.linear()
@@ -32,35 +44,67 @@ var x = d3.scale.linear()
     .range([-22, 22]);
 
 var y = d3.scale.linear()
-    .domain([-22, 22])
-    .range([-22, 22]);
+    .domain([-20, 20])
+    .range([20, -20]);
 
-var canvas = d3.select("body").append("canvas")
+var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height)
-    .call(d3.behavior.zoom().x(x).y(y).scaleExtent([1, 1000]).on("zoom", zoom))
-  .node().getContext("2d");
+    .append("g")
+    .call(d3.behavior.zoom().x(x).y(y).scaleExtent([1, 1000]).on("zoom", zoom));
 
-draw();
+svg.append("rect")
+    .attr("class", "overlay")
+    .attr("width", width)
+    .attr("height", height);
+
+svg.attr("transform","translate("+width/2+","+height/2+")");
+
+/*var circle = svg.selectAll("circle")
+    .data(data)
+  .enter().append("circle")
+    .attr("r", 2.5)
+    .attr("transform", transform);*/
+
+var text = svg.selectAll("text")
+    .data(data)
+    .enter()
+    .append("text")
+    .text(function(d){
+    	return d[2];
+    })
+    .attr("transform", transform)
+    .on("mouseover", function(d) {
+     //Create the tooltip label
+     svg.append("text")
+         .attr("id", "tooltip")
+         .attr("font-family", "sans-serif")
+         .attr("font-size", "11px")
+         .attr("font-weight", "bold")
+         .attr("fill", "orange")
+         .attr("text-anchor", "right")
+         .attr("background","blue")
+         .attr("transform",transformTooltip(d))
+         .text(d[0]+","+d[1]);
+     }).on("mouseout", function() {
+         d3.select("#tooltip").remove();
+     });
 
 function zoom() {
-  canvas.clearRect(0, 0, width, height);
-  draw();
+//  circle.attr("transform", transform);
+  text.attr("transform", transform);
+
 }
 
-function draw() {
-  var i = -1, n = data.length, d, cx, cy;
-  canvas.beginPath();
-  while (++i < n) {
-    d = data[i];
-    title = titles[i]
-    cx = x(d[0]);
-    cy = y(d[1]);
-    canvas.moveTo(cx, cy);
-    canvas.fillText(title,cx,cy);
-  }
-  canvas.fill();
-}</script>
+function transformTooltip(d) {
+  return "translate(" + x(d[0]+1) + "," + y(d[1]+1) + ")";
+}
+
+function transform(d) {
+  return "translate(" + x(d[0]) + "," + y(d[1]) + ")";
+}
+
+</script>
 </center>
 </body>
 </html>
