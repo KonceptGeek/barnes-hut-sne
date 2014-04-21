@@ -18,7 +18,7 @@ def readData(filename):
                 jsonMap[text.lower().strip()] = jsonObject
     for (key,value) in jsonMap.iteritems():
         jsonObjects.append(value)
-    return jsonObjects[:15000]
+    return jsonObjects
 
 def extBagOfWordFeatures(jsonObjects):
     corpus = []
