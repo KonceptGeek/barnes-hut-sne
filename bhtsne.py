@@ -47,6 +47,7 @@ from tempfile import mkdtemp
 import gzip, string, numpy, sys, json
 import featureExtraction
 from scipy import sparse
+from numpy import *
 
 ### Constants
 BH_TSNE_BIN_PATH = path_join(dirname(__file__), 'bh_tsne')
@@ -86,6 +87,23 @@ class TmpDir:
 
 def _read_unpack(fmt, fh):
     return unpack(fmt, fh.read(calcsize(fmt)))
+
+def PCA(dataMatrix, INITIAL_DIMS) :
+    """
+    Performs PCA on data.
+    Reduces the dimensionality to INITIAL_DIMS
+    """
+    print "Performing PCA"
+
+    dataMatrix= dataMatrix-dataMatrix.mean(axis=0)
+
+    if dataMatrix.shape[1]<INITIAL_DIMS:
+        INITIAL_DIMS=dataMatrix.shape[1]
+
+    (eigValues,eigVectors)=linalg.eig(cov(dataMatrix.T))
+    perm=argsort(-eigValues)
+    eigVectors=eigVectors[:,perm[0:INITIAL_DIMS]]
+    return dataMatrix
 
 def bh_tsne(samples, perplexity=DEFAULT_PERPLEXITY, theta=DEFAULT_THETA,
         verbose=False):
@@ -163,6 +181,9 @@ def main(args):
     
     for i in range(0,len(lensingJson)):
         titles.append(str(i))
+    
+    #Call PCA
+    data = PCA(data,30)
     
     #call bh_tsne and get the results. Zip the titles and results for writing
     result = bh_tsne(data, perplexity=argp.perplexity, theta=argp.theta, 
