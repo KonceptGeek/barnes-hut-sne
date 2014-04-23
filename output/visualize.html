@@ -12,7 +12,7 @@ svg {
 }
 
 circle:hover{
-	fill: gray;
+    fill: gray;
 }
 
 #datatext {
@@ -45,7 +45,7 @@ circle:hover{
 <div id="datatext" style="height:100%;width:15%;float:right;"></div>
 </div>
 <script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="file:///Users/KonceptGeek/Documents/Projects/barnes-hut-sne/output/coordinate-15000-p30.json"></script>
+<script src="file:///Users/KonceptGeek/Documents/Projects/barnes-hut-sne/output/coordinate-srl-full-p30.json"></script>
 <script type="text/javascript">
 var width = document.getElementById("svgcontainer").offsetWidth,
     height = 675;
@@ -59,18 +59,18 @@ for(var key in activity) {
 }
 
 var x = d3.scale.linear()
-    .domain([-26, 26])
-    .range([-26, 26]);
+    .domain([-52, 52])
+    .range([-52, 52]);
 
 var y = d3.scale.linear()
-    .domain([-26, 26])
-    .range([26, -26]);
+    .domain([-52, 52])
+    .range([52, -52]);
 
 var svg = d3.select("#container #svgcontainer").append("svg")
     .attr("width", width)
     .attr("height", height)
     .append("g")
-    .call(d3.behavior.zoom().x(x).y(y).scaleExtent([1, 100000]).on("zoom", zoom).scale(height/52));
+    .call(d3.behavior.zoom().x(x).y(y).scaleExtent([1, 100000]).on("zoom", zoom).scale(height/104));
 
 svg.append("rect")
     .attr("class", "overlay")

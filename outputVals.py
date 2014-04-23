@@ -25,4 +25,4 @@ def readData(filename):
 	print "MaxY - " + str(maxy)
 	#print set(events)
 	print len(set(events))
-readData('output/coordinate-15000-p30.json')
+readData('output/coordinate-srl-15000-p30.json')
