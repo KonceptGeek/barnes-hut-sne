@@ -29,6 +29,11 @@ circle:hover{
     text-align: center;
     font-weight:bold;
 }
+
+#svgcontainer {
+    border:1px solid;
+    border-radius:25px;
+}
 </style>
 
 <body>
@@ -43,7 +48,7 @@ circle:hover{
 <script src="file:///Users/KonceptGeek/Documents/Projects/barnes-hut-sne/output/coordinate-15000-p30.json"></script>
 <script type="text/javascript">
 var width = document.getElementById("svgcontainer").offsetWidth,
-    height = 680;
+    height = 675;
 
 var activity=jsonstr;
 var color = {}
@@ -77,7 +82,7 @@ svg.append("rect")
 var circle = svg.selectAll("circle")
     .data(data)
     .enter().append("circle")
-    .attr("r", 2)
+    .attr("r", .5)
     .attr("transform", transform)
     .attr("fill",getColor)
     .on("click", function(d){
