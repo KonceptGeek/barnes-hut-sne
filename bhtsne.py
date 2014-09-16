@@ -183,8 +183,9 @@ def main(args):
         titles.append(str(i))
     
     #Call PCA
-    data = PCA(data,30)
-    
+    #data = PCA(data,30)
+    #print "PCA Complete"
+
     #call bh_tsne and get the results. Zip the titles and results for writing
     result = bh_tsne(data, perplexity=argp.perplexity, theta=argp.theta, 
         verbose=argp.verbose)
@@ -215,7 +216,7 @@ def main(args):
         print len(resData)
         jsonStr = json.dumps(resData)
         print "MinX - %s MaxX - %s MinY - %s MaxY - %s" % (minx, maxx, miny, maxy)
-        with open('output/coordinateslensing.json','w') as outFile:
+        with open('output/coordinateslensing-full-srl-p40.json','w') as outFile:
             outFile.write("jsonstr = ");
             outFile.write(jsonStr+'\n')
 

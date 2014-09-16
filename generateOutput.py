@@ -14,7 +14,7 @@ def readCoordinateJson(filename):
 	return jsonObjects
 
 
-coordinateObjs = readCoordinateJson('output/coordinateslensing-15000-p30.json')
+coordinateObjs = readCoordinateJson('output/coordinateslensing-full-srl-p40.json')
 titles = range(0,len(coordinateObjs))
 fullDataObjs = featureExtraction.readData('data/fullData.json')[:len(titles)]
 
@@ -31,7 +31,7 @@ for (fdObj, title) in izip(fullDataObjs, titles):
 	coordinateObj['text'] = text
 	finalData[str(title)] = coordinateObj
 
-with open('output/coordinate-15000-p30.json','w') as outFile:
+with open('output/coordinate-srl-full-p40.json','w') as outFile:
 	jsonStr = json.dumps(finalData)
 	outFile.write('jsonstr = ')
 	outFile.write(jsonStr+'\n')

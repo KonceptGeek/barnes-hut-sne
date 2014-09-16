@@ -1,5 +1,5 @@
 import json
-from nltk.corpus import stopwords
+#from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer
 import numpy
 import sys
@@ -22,14 +22,17 @@ def readData(filename):
 
 def extBagOfWordFeatures(jsonObjects):
     corpus = []
-    stop = set(stopwords.words("english"))
+    #stop = set(stopwords.words("english"))
     for jsonObject in jsonObjects:
-        text = jsonObject['descriptionTokenized']
-        text = text.lower()
-        filteredWords = ' '.join([w for w in text.split() if not w in stop])
+        roleLabels = []
+        for key in jsonObject.keys():
+                    if key.startswith('role'):
+                        rolelabel = jsonObject[key]
+                        roleLabels.append(rolelabel.lower())
+        filteredWords = ' '.join(roleLabels)
         corpus.append(filteredWords)
     
     vectorizer = CountVectorizer(min_df=0,dtype='Float64')
     X = vectorizer.fit_transform(corpus)
     return X
-
+    
